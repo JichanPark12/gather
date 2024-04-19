@@ -9,6 +9,7 @@ import { db } from '@/firebase/firebaseConfig';
 import { GameInfo } from '@/interface/game';
 import { currentTurnPlayer } from './utils/currentTurnPlayer';
 import { checkCorrectCard, getAttackCount, getTurnCount } from './rules/rules';
+import { PlayingUser } from '@/interface/player';
 
 interface Props {
   setCardsState: React.Dispatch<React.SetStateAction<CardsState>>;
@@ -185,7 +186,7 @@ class GameViewModel {
         hand: [...player.hand, this.#gameData.deckList.pop()],
       };
     });
-    this.#gameData.playerList = newPlayerList;
+    this.#gameData.playerList = newPlayerList as PlayingUser[];
   }
   async mergeAndShuffle() {
     const lastCard = [this.#gameData.tombList.pop()] as CardInfo[];
