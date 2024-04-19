@@ -115,6 +115,34 @@ const Game = () => {
               }
             }}
           />
+          <Text
+            fontSize={60}
+            text={`현재 턴 유저 ${gameViewModel.getCurrentTurnPlayer()}`}
+            wrap="char"
+            width={700}
+            y={100}
+            onClick={async () => {
+              if (await gameViewModel.isCheckMyTurn()) {
+                console.log(await gameViewModel.isCheckMyTurn());
+                gameViewModel.nothingPlayCard();
+              }
+            }}
+          />
+          {gameViewModel.getWinner() !== null && (
+            <Text
+              fontSize={60}
+              text={`승리: ${gameViewModel.getWinner()}`}
+              wrap="char"
+              width={700}
+              y={200}
+              onClick={async () => {
+                if (await gameViewModel.isCheckMyTurn()) {
+                  console.log(await gameViewModel.isCheckMyTurn());
+                  gameViewModel.nothingPlayCard();
+                }
+              }}
+            />
+          )}
         </Layer>
       </Stage>
     </div>

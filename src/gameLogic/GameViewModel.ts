@@ -78,7 +78,7 @@ class GameViewModel {
   }
 
   async playCard(cardData: CardInfo) {
-    if (this.#gameData.winner !== null) return;
+    if (this.#gameData.winner !== null) return false;
     if (
       !checkCorrectCard(
         cardData,
@@ -127,7 +127,7 @@ class GameViewModel {
       attackCount: newAttackCount,
       lastCardType: cardData,
     });
-    return true;
+    return false;
   }
 
   async nothingPlayCard() {
@@ -155,9 +155,13 @@ class GameViewModel {
     const data = (await getGame(this.#docRef)) as GameInfo;
     return data.state === 'start';
   }
+  getCurrentTurnPlayer() {
+    const player = currentTurnPlayer(this.#gameData.turn, this.#gameData.playerList);
+    if (player) return player.name;
+  }
   async isCheckMyTurn() {
     const data = (await getGame(this.#docRef)) as GameInfo;
-    return this.#player === currentTurnPlayer(data.turn, this.#playerList);
+    return this.#player === currentTurnPlayer(data.turn, this.#gameData.playerList);
   }
 
   watchGameUpdates() {
@@ -197,6 +201,9 @@ class GameViewModel {
 
     this.#gameData.deckList = newDeckList;
     this.#gameData.tombList = lastCard;
+  }
+  getWinner() {
+    return this.#gameData.winner;
   }
 }
 
