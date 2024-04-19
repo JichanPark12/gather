@@ -161,7 +161,7 @@ class GameViewModel {
   }
   async isCheckMyTurn() {
     const data = (await getGame(this.#docRef)) as GameInfo;
-    return this.#player === currentTurnPlayer(data.turn, this.#gameData.playerList);
+    return this.#player === currentTurnPlayer(data.turn, this.#gameData.playerList).name;
   }
 
   watchGameUpdates() {
