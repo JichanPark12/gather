@@ -16,6 +16,7 @@ const Game = () => {
   const gameId = params?.id as string;
   const docRef = useMemo(() => doc(db, 'oneCard', gameId), [gameId]);
   const session = useSession();
+
   const router = useRouter();
   const [cardsState, setCardsState] = useState<GameInfo>({
     state: 'waiting',
@@ -31,6 +32,7 @@ const Game = () => {
   const [gameViewModel, setGameViewModel] = useState<GameViewModel>();
 
   useEffect(() => {
+    let gameViewModel: GameViewModel;
     const fetchGame = async () => {
       if (!session.data?.user?.email) return;
       const gameData = (await getDoc(docRef)).data() as GameInfo;
@@ -42,14 +44,14 @@ const Game = () => {
         player: session.data?.user?.email,
         gameData,
       });
+      gameViewModel = newGameViewModel;
       setGameViewModel(newGameViewModel);
     };
     fetchGame();
     return () => {
-      if (!gameViewModel) return;
-      gameViewModel.exitGame();
+      gameViewModel && gameViewModel.exitGame();
     };
-  }, [gameId, docRef, session]);
+  }, [gameId, docRef, session.data?.user?.email]);
 
   if (!gameViewModel || !cardsState) {
     return <div>게임 로딩중</div>;

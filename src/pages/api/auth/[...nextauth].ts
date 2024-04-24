@@ -14,6 +14,7 @@ export const authOptions: NextAuthOptions = {
     signOut: '/',
   },
   secret: process.env.NEXTAUTH_SECRET,
+
   providers: [
     CredentialsProvider({
       name: 'Credentials',

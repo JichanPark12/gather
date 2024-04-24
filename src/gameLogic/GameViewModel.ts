@@ -206,6 +206,7 @@ class GameViewModel {
       this.#player === this.#gameData.creator
         ? { ...this.#gameData, playerList: [], creator: null, state: 'close' }
         : { ...this.#gameData, playerList: newPlayerList };
+    console.log(newGameData);
     console.log(this.#player);
     setGame(this.#docRef, newGameData);
   }
