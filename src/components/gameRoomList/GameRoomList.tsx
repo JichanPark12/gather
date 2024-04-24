@@ -1,6 +1,6 @@
 'use client';
 
-import { collection, getDocs } from 'firebase/firestore';
+import { collection, doc, getDoc, onSnapshot } from 'firebase/firestore';
 import { db } from '@/firebase/firebaseConfig';
 import { useEffect, useState } from 'react';
 import { GameInfo } from '@/interface/game';
@@ -13,29 +13,45 @@ interface GameRoomInfo extends GameInfo {
 const GameRoomList = () => {
   const [dataList, setDataList] = useState<GameRoomInfo[]>();
   const router = useRouter();
+
   useEffect(() => {
-    const fetch = async () => {
-      const data = await getDocs(collection(db, 'oneCard'));
-      const dataList = data.docs.map((doc) => {
+    const unsubscribe = onSnapshot(collection(db, 'oneCard'), (snapshot) => {
+      const newDataList: GameRoomInfo[] = [];
+      snapshot.forEach((doc) => {
         const gameInfo = doc.data() as GameInfo;
-        return { ...gameInfo, id: doc.id };
+        newDataList.push({ ...gameInfo, id: doc.id });
       });
-      const filterData = dataList.filter(
+
+      const filterData = newDataList.filter(
         (data) => data.state === 'waiting' && data.creator !== null
       );
       setDataList(filterData);
-    };
-    fetch();
-    return () => {};
+    });
+
+    // Cleanup function to unsubscribe from snapshot listener when component unmounts
+    return () => unsubscribe();
   }, []);
 
   return (
-    <div className=" max-w-screen-md mx-auto bg-red-400 h-screen p-10">
+    <div className="max-w-screen-md mx-auto bg-red-400 h-screen p-10">
       {dataList?.map((data) => (
         <div
           key={data.creator}
-          className=" flex mt-5"
-          onClick={() => {
+          className="flex mt-5"
+          onClick={async () => {
+            const newData = (
+              await getDoc(doc(db, 'oneCard', data.id))
+            ).data() as GameInfo;
+            if (!newData) return;
+            if (newData.state !== 'waiting') {
+              alert('대기중인 대기방이 아닙니다.');
+              return;
+            }
+            if (newData.playerList.length === 2) {
+              alert('이미 꽉 찬 방입니다.');
+              return;
+            }
+
             router.push(`/gameRoom/${data.id}`);
           }}>
           <div>{data.creator} 님의 게임</div>
