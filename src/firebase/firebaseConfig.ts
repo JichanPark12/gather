@@ -8,7 +8,7 @@ import { getAuth } from 'firebase/auth';
 // Your web app's Firebase configuration
 // For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
-  apiKey: process.env.FIREBASE_API_KEY,
+  apiKey: 'AIzaSyDJSlau1rcUZC8Z2gUCeD9YeC8kaktCyx4',
   authDomain: 'onecard-b0e16.firebaseapp.com',
   projectId: 'onecard-b0e16',
   storageBucket: 'onecard-b0e16.appspot.com',
