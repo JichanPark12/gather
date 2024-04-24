@@ -1,50 +1,43 @@
 import React from 'react';
-import { CardInfo, CardsState } from '../interface/card';
+import { CardInfo } from '../interface/card';
 import { initCardList } from './utils/initCardList';
 import shuffleArray from './utils/shuffle';
 import { gameConfig } from '@/constants/gameConfig';
 import { getGame, setGame } from './curd/crud';
-import { doc, onSnapshot } from 'firebase/firestore';
-import { db } from '@/firebase/firebaseConfig';
+import { DocumentData, DocumentReference, onSnapshot } from 'firebase/firestore';
 import { GameInfo } from '@/interface/game';
 import { currentTurnPlayer } from './utils/currentTurnPlayer';
 import { checkCorrectCard, getAttackCount, getTurnCount } from './rules/rules';
 import { PlayingUser } from '@/interface/player';
 
 interface Props {
-  setCardsState: React.Dispatch<React.SetStateAction<CardsState>>;
-  playerList: string[];
+  setCardsState: React.Dispatch<React.SetStateAction<GameInfo>>;
+  gameId: string;
+  docRef: DocumentReference<DocumentData, DocumentData>;
+  player: string;
+  gameData: GameInfo;
 }
 
 class GameViewModel {
   #setCardsState;
-  #playerList;
-  #gameId = 'gameRoom1';
+
+  #gameId;
   #docRef;
   #player;
-  #gameData: GameInfo = {
-    state: 'waiting',
-    playerList: [],
-    turn: 0,
-    deckList: [],
-    tombList: [],
-    attackCount: 0,
-    lastCardType: 'any',
-    winner: null,
-  };
+  #gameData;
 
-  constructor({ setCardsState, playerList }: Props) {
+  constructor({ setCardsState, gameId, docRef, player, gameData }: Props) {
     this.#setCardsState = setCardsState;
-
-    this.#playerList = playerList;
-    this.#docRef = doc(db, 'oneCard', this.#gameId);
-    const player = localStorage.getItem('player');
-    if (!player) throw new Error('유효하지 않은 사용자 입니다.');
-    this.#player = JSON.parse(player);
+    this.#player = player;
+    this.#gameId = gameId;
+    this.#docRef = docRef;
+    this.#gameData = gameData;
+    const isJoinMe = gameData.playerList.filter((my) => my.name === player).length > 0;
+    if (gameData.playerList.length < 2 && !isJoinMe) this.joinGame();
+    this.watchGameUpdates();
   }
 
   async start() {
-    this.watchGameUpdates();
     !(await this.isCheckStart()) && this.initGame();
   }
 
@@ -127,7 +120,7 @@ class GameViewModel {
       attackCount: newAttackCount,
       lastCardType: cardData,
     });
-    return false;
+    return true;
   }
 
   async nothingPlayCard() {
@@ -168,12 +161,8 @@ class GameViewModel {
     onSnapshot(this.#docRef, (doc) => {
       const newData = doc.data() as GameInfo;
       this.#gameData = newData;
-      const newCardsState: CardsState = {
-        tombList: newData.tombList,
-        deckList: newData.deckList,
-        playerList: newData.playerList,
-      };
-      this.#setCardsState(newCardsState);
+
+      this.#setCardsState(newData);
     });
   }
   async drawCard(playerName?: string) {
@@ -204,6 +193,31 @@ class GameViewModel {
   }
   getWinner() {
     return this.#gameData.winner;
+  }
+  getGameState() {
+    return this.#gameData.state;
+  }
+  exitGame() {
+    const newPlayerList = this.#gameData.playerList.filter(
+      (player) => this.#player !== player.name
+    );
+
+    const newGameData: GameInfo =
+      this.#player === this.#gameData.creator
+        ? { ...this.#gameData, playerList: [], creator: null, state: 'close' }
+        : { ...this.#gameData, playerList: newPlayerList };
+    console.log(this.#player);
+    setGame(this.#docRef, newGameData);
+  }
+  joinGame() {
+    const newPlayerList: PlayingUser[] = [
+      ...this.#gameData.playerList,
+      {
+        name: this.#player,
+        hand: [],
+      },
+    ];
+    setGame(this.#docRef, { ...this.#gameData, playerList: newPlayerList });
   }
 }
 
