@@ -58,6 +58,7 @@ class GameViewModel {
       );
     });
 
+    this.#gameData.tombList = [this.#gameData.deckList.pop() as CardInfo];
     await setGame(this.#docRef, {
       ...this.#gameData,
       deckList: cardList,
