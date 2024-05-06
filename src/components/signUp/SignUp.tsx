@@ -40,7 +40,7 @@ const SignUp = () => {
           <div className="flex justify-between">
             <label className="form-control w-full">
               <div className="label">
-                <span className="label-text">닉네임</span>
+                <span className="label-text">이메일</span>
               </div>
               <input
                 name="email"

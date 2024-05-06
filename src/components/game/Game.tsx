@@ -197,7 +197,7 @@ const Game = () => {
           </Group>
           <Text
             fontSize={30}
-            x={window.innerWidth / 2 + 100}
+            x={window.innerWidth / 2 + 300}
             y={window.innerHeight / 2 - 20}
             text="턴넘기기"
             wrap="char"
